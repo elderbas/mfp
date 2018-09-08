@@ -28,7 +28,11 @@ var fetchDateRange = function(username, startDate, endDate, fields, callback){
     $('.main-title-2').each(function(index, element){
       var $element = $(element);
       dates.push( helpers.formatDate(new Date($element.text())) );
-      $tables.push($element.next('#food'));
+      const $food = $element.next('#food');
+      $tables.push({
+        exercise: $food.next('#excercise'),
+        food: $food,
+      });
     });
 
     //create a results object
@@ -46,7 +50,7 @@ var fetchDateRange = function(username, startDate, endDate, fields, callback){
       var cols = {};
 
       //find and set column numbers of nutrient fields
-      $table.find('thead').find('tr').find('td').each(function(index, element){
+      $table.food.find('thead').find('tr').find('td').each(function(index, element){
         var $element = $(element);
         var fieldName = $element.text().toLowerCase();
         if (fieldName === "sugars") { fieldName = "sugar"; } // fixes MFP nutrient field name inconsistency
@@ -55,8 +59,8 @@ var fetchDateRange = function(username, startDate, endDate, fields, callback){
       });
 
       //find row in MFP with nutrient totals
-      var $dataRow = $table.find('tfoot').find('tr');
-
+      var $dataRow = $table.food.find('tfoot').find('tr');
+      
       //store data for each field in results
       for (var field in cols) {
         var col = cols[field] + 1; //because nth-child selector is 1-indexed, not 0-indexed
@@ -80,7 +84,10 @@ var fetchDateRange = function(username, startDate, endDate, fields, callback){
 
       //add date to results object
       results.date = date;
-
+      
+      // process all exercise calories
+      const exercise = $table.exercise.find('tfoot').find('tr').find('td:nth-child(2)').text()
+      results.caloriesFromExercise = parseInt(exercise, 10) || 0; // initialize as 0
       return results;
     };
 
